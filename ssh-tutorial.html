@@ -6,12 +6,13 @@ werdet. Aber das macht es wahrscheinlich auch so cool.
 Um sich auf einem anderen Rechner einzuloggen und dabei einen
 sicheren Kanal (kommt noch in der Vorlesung) zu verwenden, nutzen
 wir das Programm ssh (secure shell).  Das ssh Programm verbindet
-sich zum angegebenen Host auf Port 22. Dort lauscht der ssh server,
-der sshd.  Ssh identifiziert den Server seitens eines Fingerprints.
+sich zum angegebenen Host auf Port 22. Dort lauscht der ssh Server,
+der sshd.  ssh identifiziert den Server seitens eines Fingerprints.
 Dieser wird in .ssh/known_hosts gemerkt. Optimaler Weise wird dieser
 Fingerprint dem Client über andere Wege mitgeteilt, z.B. via DNS.
+
 Bestenfalls tauschen Client und Server Schlüsselmaterial für die
-Session (Sitzung) mittels Public-Key-Crypto (kommt noch in der
+Session (Sitzung) mittels public key authentication (kommt noch in der
 Vorlesung) aus. Damit dies geschehen kann, muss der Server den
 öffentlichen Schlüssel kennen. In unserem fall müssen wir nur
 den Inhalt der .pub Datei an den Scoreboard-Webserver geben.  Dieser
@@ -20,34 +21,46 @@ an. Bei jedem Loginversuch wird ermittelt, ob der Client mittels
 eines der dort hinterlegten Schlüssel kommunizieren möchte.
 
 Um ein Schlüsselpaar anzulegen wird das ssh-keygen Programm genutzt.
-Mit -t kann ein anderer Algorithmus zur Schlüsselgenerierung
-verwendet werden. Der Default sollte aber passen.  In der Regel
-sollte es nicht notwendig sein, mehr als ein Schlüsselpaar zu
-generieren. Am wichtigsten ist, dass der Privatekey mittels einer
+In der Regel sollte es nicht notwendig sein, mehr als ein Schlüsselpaar
+zu generieren. Am wichtigsten ist, dass der Privatekey mittels einer
 Passphrase geschützt ist. Andernfalls hat jeder Angreifer mit
 Lesezugriff auf die Schlüsseldatei auch gleich zugriff auf sämtliche
 Systeme auf denen dieser hinterlegt ist.
+
+https://www.openssh.com/manual.html
+vor allem
+https://man.openbsd.org/ssh#AUTHENTICATION
+und
+https://man.openbsd.org/ssh#VERIFYING_HOST_KEYS
 
 Der .ssh Ordner darf nur vom Besitzer gelesen und geschrieben werden.
 Bei Abweichungen dieser Berechtigungen bricht das ssh Programm
 frühzeitig ab. Entsprechend könnten auch andere Programme des
 Besitzers (besonders Webbrowser z.B.) auch auf die Schlüssel
-zugreifen. Und damit dann nicht dein bekannter Admin dir sagt, dass
-du die Kontrolle über dein System verloren hast, sichern wir unsere
-Schlüssel mit einer Passphrase.  Phrase, denn die sind einfacher
-zu merken und ein längeres Passwort mit einem geringerem Eingabealphabet
-ist idr. schwerer mittels brute force zu brechen als ein kürzeres
-komplexeres.
+zugreifen.
 
-Trotzdem ist es sinnvoll auch Zahlen, Groß-, Kleinschreibung,
-Sonderzeichen und alles was Unicode so kann zu verwenden. Gerade
-bei Wörtern und Sätzen ist das berechnen der Entropie (eine
-Definition kommt noch in der Vorlesung) nicht ganz intuitiv, aber
-es lässt sich gewiss sagen, dass sie um einiges geringer ist, als
-echt zufällige Zeichenketten.
+Vom Pubkey lässt sich nicht wieder auf den Privkey schliessen und
+diesen zu veröffentlichen schadet nicht, ausser vielleicht der
+Privacy.
 
-Zum Pubkey: von diesem lässt sich nicht wieder auf den Privkey
-schliessen und diesen zu veröffentlichen schadet nicht, ausser
-vielleicht der Privacy.
+Via ssh können auch Dateien übertragen werden:
+scp ~/local_file remote_host:~/remote_location
+bzw.
+scp remote_host:~/remote_file ~/some_location
 
-Todo ssh man pages, docs, papers, code links
+Es ist sinnvoll Argumente wie z.B. Nutzernamen, lange Hostnamen,
+den Pfad zum privaten Schlüssel, oder auch Abweichungen der Algorithmen
+nach .ssh/config zu schreiben, um weniger zu tippen:
+ssh -i ~/.ssh/id_ed25519 team-XXX@sandkasten.sec.in.tum.de
+
+.ssh/config
+Host sandkasten
+        HostName sandkasten.sec.in.tum.de
+        IdentityFile .ssh/id_ed25519
+        User team-XXX
+
+ssh sandkasten
+
+Um nicht bei jeder Dateiübertragung und jedem Login die Passphrase
+eintippen zu müssen, gibt es den ssh-agent:
+https://man.openbsd.org/ssh-agent
