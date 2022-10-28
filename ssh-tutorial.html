@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-	<title>XXX</title>
+	<title>SSH Tutorial</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style>
@@ -11,37 +11,44 @@
 </head>
 <body>
 <h1>ssh Tutorial</h1>
+
 <h2>Vorbemerkung</h2>
 <p>
-Dies ist mein (Moritz Buhl) limitiertes Verständnis von ssh. Es
-ist nicht alles richtig und detailliert. SSH enthält sehr viel,
-das ihr erst zum Ende der Vorlesung komplett begreifen werdet. Aber
-das macht es auch wahnsinnig cool.
+Dieses Dokument zeigt limitiertes Verständnis von ssh.
+Es vereinfacht zunaechst vieles und ist daher nicht in allen Details richtig
+bzw. vollstaendig.
+SSH enthält sehr viel, das ihr erst zum Ende der Vorlesung komplett begreifen
+werdet.
+Aber das macht es auch wahnsinnig cool.
 </p>
+
 <h2>Funktion</h2>
 <p>
-Um sich auf einem anderen Rechner einzuloggen und dabei einen
-sicheren Kanal (kommt noch in der Vorlesung) zu verwenden, nutzen
-wir das Programm ssh (secure shell).  Das ssh Programm verbindet
-sich zum angegebenen Host auf Port 22. Dort lauscht der ssh Server,
-der sshd.  ssh identifiziert den Server seitens eines Fingerprints.
+Um sich sicher (verschluesselt) auf einem anderen Rechner einzuloggen nutzen wir
+das Programm ssh (Secure SHell).
+Das Client-Programm ssh verbindet sich zum Server-Programm sshd.
+Der sshd lauscht ueblicherweise auf TCP-Port 22.
+
+ssh identifiziert den Server ueber dessen Hostskeys.
+Dieses ist ein Private-/Public-Key-Pair (siehe Asymetrische-Verschluesselung).
 </p>
+
 <p>
-Beim ersten Login wird sich der Fingerprint in <code>~/.ssh/known_hosts</code>
-gemerkt. Optimaler Weise wird dieser Fingerprint dem Client über
-andere Wege mitgeteilt, z.B. via DNS.
+Beim der ersten Verbindung wird der SSH-Client den Nutzer bitten den Fingerprint
+des SSH-Servers zu bestaetigen und ihn in <code>~/.ssh/known_hosts</code>
+speichern.
 Bestenfalls tauschen Client und Server Schlüsselmaterial für die
 Session (Sitzung) mittels Public-Key-Authentifizierung (kommt noch
 in der Vorlesung) aus. Damit dies geschehen kann, muss der Server
-den öffentlichen Schlüssel kennen.
+den öffentlichen Schlüssel des Clients kennen.
 </p>
 <p>
-Für den IT-Sicherheit Kurs muss nur den Inhalt der .pub Datei beim
+Für den IT-Sicherheitskurs muss nur der Inhalt der .pub Datei beim
 Scoreboard-Webserver hochgeladen werden.
-Dieser hängt den Pubkey dann auf dem Sandkasten Server an die Datei in
-~/.ssh/authorized_keys an. Bei jedem Loginversuch wird ermittelt, ob
-der Client mittels eines der dort hinterlegten Schlüssel kommunizieren
-möchte.
+Dieser hängt den Pubkey dann auf dem Sandbox-Server an die Datei
+~/.ssh/authorized_keys an.
+Bei jedem Loginversuch wird ermittelt, ob der Client sich mittels eines der dort
+hinterlegten Schlüssels authentifizieren möchte.
 </p>
 <p>
 <ul>
@@ -50,38 +57,41 @@ möchte.
     <li>und <a href="https://man.openbsd.org/ssh#VERIFYING_HOST_KEYS">verifying host keys</a>
 </ul>
 </p>
-<h2>Schlüsselgenerierung</h2> <p> Um ein Schlüsselpaar anzulegen
-wird das ssh-keygen Programm genutzt.
+
+<h2>Schlüsselgenerierung</h2>
+<p> Um ein Schlüsselpaar anzulegen wird das ssh-keygen Programm genutzt.
 In der Regel sollte es nicht notwendig sein, mehr als ein Schlüsselpaar
 zu generieren. Am wichtigsten ist, dass der Privatekey mittels einer
 Passphrase geschützt ist. Andernfalls hat jeder Angreifer mit
-Lesezugriff auf die Schlüsseldatei auch gleich zugriff auf sämtliche
-Systeme auf denen dieser hinterlegt ist.
+Lesezugriff auf die Schlüsseldatei auch gleich unmittelbaren Zugriff auf den
+Schluessel und damit auf sämtliche Systeme auf denen dieser hinterlegt ist.
 </p>
 <p>
-Der <code>~/.ssh</code> Ordner darf nur vom Besitzer gelesen und
+Der Ordner <code>~/.ssh</code> darf nur vom Besitzer gelesen und
 geschrieben werden.  Bei Abweichungen dieser Berechtigungen bricht
-das ssh Programm frühzeitig ab. Entsprechend könnten auch andere
-Programme des Besitzers (besonders Webbrowser z.B.) auch auf die
-Schlüssel zugreifen.
+das ssh Programm frühzeitig ab.
+Es ist zubeachten, dass auch andere Programme des Benutzers
+(besonders Webbrowser z.B.) auch auf die Schlüsseldatein zugreifen können.
 </p>
 <p>
 Vom Pubkey lässt sich nicht wieder auf den Privkey schliessen und
 diesen zu veröffentlichen schadet nicht, ausser vielleicht der
 Privacy.
 </p>
+
 <h2>Dateiübertragung</h2>
 <p>
 Via ssh können auch Dateien übertragen werden:
-<code>scp ~/local_file remote_host:~/remote_location</code>
+<code>scp local_file remote_host:remote_location</code>
 bzw.
-<code>scp remote_host:~/remote_file ~/some_location</code>
+<code>scp remote_host:remote_file local_location</code>
 </p>
+
 <h2>config Datei</h2>
 <p>
-Es ist sinnvoll Argumente wie z.B. Nutzernamen, lange Hostnamen,
-den Pfad zum privaten Schlüssel, oder auch Abweichungen der Algorithmen
-nach ~/.ssh/config zu schreiben, um weniger zu tippen:
+Es ist sinnvoll Argumente wie z.B. abweichende Nutzernamen, lange Hostnamen,
+den Pfad zu alternativen Schlüsseldateien, oder auch alternative Algorithmen
+in ~/.ssh/config zu schreiben, um weniger zu tippen:
 <code>ssh -i ~/.ssh/id_ed25519 team-XXX@sandkasten.sec.in.tum.de</code>
 <br>
 <code>~/.ssh/config:</code>
